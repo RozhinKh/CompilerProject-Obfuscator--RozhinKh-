@@ -33,4 +33,6 @@ def dead_code(code):
     code = re.sub(r'(main\s*\([^)]*\)\s*\{)', r'\1\nint useless = 0;', code, 1)
     return code
 
+def complex_equivalents(code):
+    return re.sub(r'(\w+)\s*=\s*(\w+)\s*\+\s*(\w+)', r'\1 = \2 - (-\3)', code)
 
