@@ -28,4 +28,9 @@ def rename_variables_and_functions(code):
 
     return code
 
+def dead_code(code):
+    code = re.sub(r'(\{)', r'\1\nint unused = 1234;', code, 1)
+    code = re.sub(r'(main\s*\([^)]*\)\s*\{)', r'\1\nint useless = 0;', code, 1)
+    return code
+
 
