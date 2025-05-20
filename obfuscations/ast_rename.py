@@ -1,4 +1,4 @@
-
+from pycparser import c_ast
 
 rename_name = {}
 rename_name_counters = {
@@ -47,3 +47,60 @@ def get_or_create_renamed_name(original_name, category_key):
 def reset_renaming_state():
     rename_name.clear()
     for key in rename_name_counters: rename_name_counters[key] = 0
+
+class IdentifierRenamer(c_ast.NodeVisitor):
+    def __init__(self):
+        pass
+
+    def visit_ID(self, node):
+        if node.name in RESERVED_NAMES:
+            return
+
+        renamed_as_func = rename_name.get((node.name, 'func'))
+        renamed_as_var = rename_name.get((node.name, 'var'))
+
+        if renamed_as_func:
+            node.name = renamed_as_func
+        elif renamed_as_var:
+            node.name = renamed_as_var
+        elif name_for_category(node.name, VARIABLE_PREFIXES):
+            new_name = get_or_create_renamed_name(node.name, 'var')
+            node.name = new_name
+        elif name_for_category(node.name, FUNCTION_PREFIXES):
+            new_name = get_or_create_renamed_name(node.name, 'func')
+            node.name = new_name
+
+    def visit_Declaration(self, node):
+        if node.type is not None:
+            self.visit(node.type)
+
+        if node.name and node.name not in RESERVED_NAMES:
+            original_name = node.name
+            category = 'var'
+
+            if isinstance(node.type, c_ast.FuncDecl):
+                category = 'func'
+            elif name_for_category(original_name, VARIABLE_PREFIXES):
+                category = 'var'
+            elif name_for_category(original_name, FUNCTION_PREFIXES):
+                category = 'func'
+
+            new_name = get_or_create_renamed_name(original_name, category)
+            node.name = new_name
+
+            type_ptr = node.type
+            while hasattr(type_ptr, 'type') and not isinstance(type_ptr, c_ast.IdentifierType):
+                if isinstance(type_ptr, c_ast.TypeDecl) and type_ptr.declname == original_name:
+                    type_ptr.declname = new_name
+                    break
+                if not hasattr(type_ptr, 'type'): break  # Safety break
+                type_ptr = type_ptr.type
+
+            if isinstance(type_ptr, c_ast.TypeDecl) and type_ptr.declname == original_name:
+                type_ptr.declname = new_name
+
+        if node.init is not None:
+            self.visit(node.init)
+
+
+
