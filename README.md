@@ -1,2 +1,1 @@
 # CompilerProject-Obfuscator--RozhinKh-
-eyvala
