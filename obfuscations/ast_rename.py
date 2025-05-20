@@ -123,5 +123,4 @@ def apply_renaming(ast_root_node):
     renamer_visitor.visit(ast_root_node)
     return ast_root_node
 
-#
 
