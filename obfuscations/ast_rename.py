@@ -1,6 +1,7 @@
 from pycparser import c_ast
 
 rename_name = {}
+
 rename_name_counters = {
     'var': 0,
     'func': 0,
@@ -12,17 +13,19 @@ PREFIXES = {
 }
 
 RESERVED_NAMES = {
-    'break', 'case', 'char', 'continue', 'default', 'do', 'double',
-    'else', 'enum', 'float', 'for',  'if', 'int', 'return', 'switch', 'void', 'volatile', 'while'
+    'break', 'case', 'char', 'const', 'continue', 'default', 'do',
+    'double', 'else', 'enum', 'float', 'for', 'if', 'int', 'long',
+    'return', 'static','struct', 'switch', 'void', 'while'
 }
+
 
 VARIABLE_PREFIXES = ["deadcode_", "dummyVariable_", "opaque_var_"]
 FUNCTION_PREFIXES = ["dummyFunction_"]
 
 
 def name_for_category(name, category_prefixes):
-    for prefixes in category_prefixes:
-        if name.startswith(prefixes):
+    for prefix in category_prefixes:
+        if name.startswith(prefix):
             return True
     return False
 
@@ -32,10 +35,10 @@ def generate_obfuscated_name(category_key):
     prefix = PREFIXES[category_key]
     return f"{prefix}{rename_name_counters[category_key]}"
 
+
 def get_or_create_renamed_name(original_name, category_key):
     if original_name in RESERVED_NAMES:
         return original_name
-
     actual_category_key_for_cache = category_key if category_key == 'func' else 'var'
     cache_key = (original_name, actual_category_key_for_cache)
 
@@ -46,11 +49,11 @@ def get_or_create_renamed_name(original_name, category_key):
 
 def reset_renaming_state():
     rename_name.clear()
-    for key in rename_name_counters: rename_name_counters[key] = 0
+    for key in rename_name_counters:
+        rename_name_counters[key] = 0
+
 
 class IdentifierRenamer(c_ast.NodeVisitor):
-    def __init__(self):
-        pass
 
     def visit_ID(self, node):
         if node.name in RESERVED_NAMES:
@@ -70,14 +73,13 @@ class IdentifierRenamer(c_ast.NodeVisitor):
             new_name = get_or_create_renamed_name(node.name, 'func')
             node.name = new_name
 
-    def visit_Declaration(self, node):
+    def visit_Decl(self, node):
         if node.type is not None:
             self.visit(node.type)
 
         if node.name and node.name not in RESERVED_NAMES:
             original_name = node.name
             category = 'var'
-
             if isinstance(node.type, c_ast.FuncDecl):
                 category = 'func'
             elif name_for_category(original_name, VARIABLE_PREFIXES):
@@ -87,13 +89,13 @@ class IdentifierRenamer(c_ast.NodeVisitor):
 
             new_name = get_or_create_renamed_name(original_name, category)
             node.name = new_name
-
             type_ptr = node.type
             while hasattr(type_ptr, 'type') and not isinstance(type_ptr, c_ast.IdentifierType):
                 if isinstance(type_ptr, c_ast.TypeDecl) and type_ptr.declname == original_name:
                     type_ptr.declname = new_name
                     break
-                if not hasattr(type_ptr, 'type'): break  # Safety break
+                if not hasattr(type_ptr, 'type'):
+                    break
                 type_ptr = type_ptr.type
 
             if isinstance(type_ptr, c_ast.TypeDecl) and type_ptr.declname == original_name:
@@ -102,5 +104,24 @@ class IdentifierRenamer(c_ast.NodeVisitor):
         if node.init is not None:
             self.visit(node.init)
 
+    def visit_FuncDef(self, node):
+        if node.decl is not None:
+            self.visit(node.decl)
+        if node.body is not None:
+            self.visit(node.body)
 
+    def visit_FuncDecl(self, node):
+        if node.args:
+            self.visit(node.args)
+        if node.type:
+            self.visit(node.type)
+
+
+def apply_renaming(ast_root_node):
+    reset_renaming_state()
+    renamer_visitor = IdentifierRenamer()
+    renamer_visitor.visit(ast_root_node)
+    return ast_root_node
+
+#
 
