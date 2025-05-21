@@ -7,6 +7,7 @@ rename_name_counters = {
     'func': 0,
 }
 
+
 PREFIXES = {
     'var': "var",
     'func': "xyz",

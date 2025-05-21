@@ -76,6 +76,7 @@ class OpaquePredicateInserter(c_ast.NodeVisitor):
 
         return [declaration_predicate_var, opaque_if_statement]
 
+
     def visit_Compound(self, node):
         self.generic_visit(node)
 

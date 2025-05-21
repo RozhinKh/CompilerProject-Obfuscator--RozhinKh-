@@ -291,6 +291,7 @@ class ObfuscatorGUI:
         print("Cleared.")
 
 
+
 def _preprocess_code_cli(code_string):
     code_string = re.sub(r'//.*', '', code_string)
     code_string = re.sub(r'/\*.*?\*/', '', code_string, flags=re.DOTALL)

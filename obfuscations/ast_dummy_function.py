@@ -119,6 +119,7 @@ def apply_dummy_function_insertion(root_node, num_to_insert=1):
         return root_node
 
 
+
     reset_dummy_state()
     injector = DummyFunctionInjector()
     injector.dummy_injection(root_node, num_dummy_functions=num_to_insert)

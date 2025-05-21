@@ -5,6 +5,7 @@ class EquivalentExpression(c_ast.NodeVisitor):
     def visit_BinaryOp(self, node):
         self.generic_visit(node)
 
+
         if node.op == '+':
             if isinstance(node.right, (c_ast.ID, c_ast.Constant)) and \
                     not (isinstance(node.right, c_ast.Constant) and node.right.value.startswith('-')):
