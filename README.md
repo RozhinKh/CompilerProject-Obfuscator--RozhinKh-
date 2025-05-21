@@ -118,10 +118,7 @@ The obfuscator is meticulously designed to ensure that the obfuscated code maint
 
 ## Team Members
 
-* [Your Name/Team Member 1 Name]
-* [Team Member 2 Name (if applicable)]
-* [Team Member 3 Name (if applicable)]
+* [Rozhin Khalilian]
+* [Kimia Mazloomifar]
+* [Alireza Karaminejad]
 
-## License
-
-[Specify your project's license here, e.g., MIT License, Apache 2.0, or "All Rights Reserved"]
