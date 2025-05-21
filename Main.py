@@ -1,4 +1,3 @@
-
 import tkinter as tk
 from tkinter import filedialog, ttk
 import os
@@ -17,7 +16,7 @@ from obfuscations.ast_opaque_predicate import apply_opaque_predicates
 sys.setrecursionlimit(20000)
 
 class ObfuscatorGUI:
-    def init(self, root_window):
+    def __init__(self, root_window):
         self.root = root_window
         self.root.title("Mini-C Obfuscator")
         self.current_input_filepath = None
@@ -88,7 +87,6 @@ class ObfuscatorGUI:
         input_text_frame.rowconfigure(0, weight=1)
         input_text_frame.columnconfigure(0, weight=1)
 
-
         self.input_text_area = tk.Text(input_text_frame, undo=True, wrap=tk.WORD, font=('Consolas', 10), height=15)
         self.input_text_scrollbar = ttk.Scrollbar(input_text_frame, orient="vertical",
                                                   command=self.input_text_area.yview)
@@ -135,28 +133,27 @@ class ObfuscatorGUI:
         self.input_text_area.insert(tk.END, input_code)
         name_part, ext_part = os.path.splitext(self.current_input_filename)
         if not ext_part: ext_part = ".mc"
-        suggested_output_filename = f"{name_part}_obf{ext_part}" # Changed suffix
+        suggested_output_filename = f"{name_part}_obf{ext_part}"
         suggested_output_path = os.path.join(os.path.dirname(filepath), suggested_output_filename)
         self.output_entry.delete(0, tk.END)
-        self.output_entry.insert(0, suggested_output_path.replace("\\", "/")) # Ensure forward slashes
+        self.output_entry.insert(0, suggested_output_path.replace("\\", "/"))
 
     def action_select_output_file(self):
         initial_dir = "."
         initial_file = "output.mc"
         if self.current_input_filepath:
             initial_dir = os.path.dirname(self.current_input_filepath)
-            name_part, ext_part = os.path.splitext(self.current_input_filename)
+            name_part, ext_part = os.path.splitext(os.path.basename(self.current_input_filepath))
             if not ext_part: ext_part = ".mc"
-            initial_file = f"{name_part}_obf{ext_part}" # Changed suffix
+            initial_file = f"{name_part}_obf{ext_part}"
         elif self.input_entry.get():
             initial_dir = os.path.dirname(self.input_entry.get())
             base = os.path.basename(self.input_entry.get())
             name_part, ext_part = os.path.splitext(base)
             if not ext_part: ext_part = ".mc"
-            initial_file = f"{name_part}_obf{ext_part}" # Changed suffix
+            initial_file = f"{name_part}_obf{ext_part}"
 
-
-            filepath = filedialog.asksaveasfilename(
+        filepath = filedialog.asksaveasfilename(
             initialdir=initial_dir,
             initialfile=initial_file,
             defaultextension=".mc",
@@ -164,7 +161,7 @@ class ObfuscatorGUI:
         )
         if filepath:
             self.output_entry.delete(0, tk.END)
-            self.output_entry.insert(0, filepath.replace("\\", "/")) # Ensure forward slashes
+            self.output_entry.insert(0, filepath.replace("\\", "/"))
 
     def handle_drop_file(self, event):
         filepath_str = event.data
@@ -185,10 +182,10 @@ class ObfuscatorGUI:
             self.input_text_area.insert(tk.END, input_code)
             name_part, ext_part = os.path.splitext(self.current_input_filename)
             if not ext_part: ext_part = ".mc"
-            suggested_output_filename = f"{name_part}_obf{ext_part}" # Changed suffix
+            suggested_output_filename = f"{name_part}_obf{ext_part}"
             suggested_output_path = os.path.join(os.path.dirname(filepath), suggested_output_filename)
             self.output_entry.delete(0, tk.END)
-            self.output_entry.insert(0, suggested_output_path.replace("\\", "/")) # Ensure forward slashes
+            self.output_entry.insert(0, suggested_output_path.replace("\\", "/"))
         else:
             print(f"Error: Invalid file dropped: {filepath}")
 
@@ -203,12 +200,12 @@ class ObfuscatorGUI:
 
         processed_c_code_str = input_code_from_textarea
 
-        processed_c_code_str = re.sub(r'attribute__\s*\(\([^)]*\)\)', '', processed_c_code_str)
-        processed_c_code_str = re.sub(r'__restrict(?:)?', '', processed_c_code_str)
-        processed_c_code_str = re.sub(r'extension', '', processed_c_code_str)
-        processed_c_code_str = re.sub(r'volatile(?:)?', '', processed_c_code_str)
-        processed_c_code_str = re.sub(r'inline(?:)?', '', processed_c_code_str)
-        processed_c_code_str = re.sub(r'asm__\s*\(\s*".*?"\s*\)', '', processed_c_code_str)
+        processed_c_code_str = re.sub(r'__attribute__\s*\(\([^)]*\)\)', '', processed_c_code_str)
+        processed_c_code_str = re.sub(r'__restrict(?:__)?', '', processed_c_code_str)
+        processed_c_code_str = re.sub(r'__extension__', '', processed_c_code_str)
+        processed_c_code_str = re.sub(r'__volatile(?:__)?', '', processed_c_code_str)
+        processed_c_code_str = re.sub(r'__inline(?:__)?', '', processed_c_code_str)
+        processed_c_code_str = re.sub(r'__asm__\s*\(\s*".*?"\s*\)', '', processed_c_code_str)
         processed_c_code_str = re.sub(r'__asm\s*\(\s*".*?"\s*\)', '', processed_c_code_str)
         processed_c_code_str = re.sub(r'__declspec\s*\([^)]*\)', '', processed_c_code_str)
 
@@ -223,7 +220,7 @@ class ObfuscatorGUI:
         if self.obf_options.get("opaque_predicate", tk.BooleanVar(value=False)).get():
             ast = apply_opaque_predicates(ast)
         if self.obf_options.get("rename", tk.BooleanVar(value=False)).get():
-            ast = apply_renaming(ast, debug_mode=True)
+            ast = apply_renaming(ast) # Removed debug_mode=False
         if self.obf_options.get("equivalent_expression", tk.BooleanVar(value=False)).get():
             ast = apply_equivalent_expression(ast)
 
@@ -252,54 +249,53 @@ class ObfuscatorGUI:
         self.current_input_filename = "input.mc"
         print("Cleared. Ready.")
 
-        def run_cli_mode():
-            if not (2 <= len(sys.argv) <= 3):
-                print("Usage: python main_ast.py <input_file.c> [output_file.c]")
-                sys.exit(1)
 
-            input_file_arg = sys.argv[1]
+def run_cli_mode():
+    if not (2 <= len(sys.argv) <= 3):
+        print("Usage: python main_ast.py <input_file.c> [output_file.c]")
+        sys.exit(1)
 
-            if not os.path.exists(input_file_arg):
-                print(f"Error: Input file '{input_file_arg}' not found.", file=sys.stderr)
-                sys.exit(1)
+    input_file_arg = sys.argv[1]
 
-            if len(sys.argv) == 3:
-                output_file_arg = sys.argv[2]
-            else:
-                name_part, ext_part = os.path.splitext(os.path.basename(input_file_arg))
-                if not ext_part: ext_part = ".mc"
-                output_file_arg = f"{name_part}_obf{ext_part}"
+    if not os.path.exists(input_file_arg):
+        print(f"Error: Input file '{input_file_arg}' not found.", file=sys.stderr)
+        sys.exit(1)
 
-            with open(input_file_arg, 'r', encoding='utf-8') as f:
-                code_to_obfuscate = f.read()
-            processed_c_code_cli_str = code_to_obfuscate
+    if len(sys.argv) == 3:
+        output_file_arg = sys.argv[2]
+    else:
+        name_part, ext_part = os.path.splitext(os.path.basename(input_file_arg))
+        if not ext_part: ext_part = ".mc"
+        output_file_arg = f"{name_part}_obf{ext_part}"
 
-            processed_c_code_cli_str = re.sub(r'__attribute__\s*\(\([^)]*\)\)', '', processed_c_code_cli_str)
-            processed_c_code_cli_str = re.sub(r'__restrict(?:)?', '', processed_c_code_cli_str)
-            processed_c_code_cli_str = re.sub(r'extension', '', processed_c_code_cli_str)
-            processed_c_code_cli_str = re.sub(r'volatile(?:)?', '', processed_c_code_cli_str)
-            processed_c_code_cli_str = re.sub(r'inline(?:)?', '', processed_c_code_cli_str)
+    with open(input_file_arg, 'r', encoding='utf-8') as f:
+        code_to_obfuscate = f.read()
+    processed_c_code_cli_str = code_to_obfuscate
 
 
-            processed_c_code_cli_str = re.sub(r'asm__\s*\(\s*".*?"\s*\)', '', processed_c_code_cli_str)
-            processed_c_code_cli_str = re.sub(r'__asm\s*\(\s*".*?"\s*\)', '', processed_c_code_cli_str)
-            processed_c_code_cli_str = re.sub(r'__declspec\s*\([^)]*\)', '', processed_c_code_cli_str)
+    processed_c_code_cli_str = re.sub(r'__attribute__\s*\(\([^)]*\)\)', '', processed_c_code_cli_str)
+    processed_c_code_cli_str = re.sub(r'__restrict(?:__)?', '', processed_c_code_cli_str)
+    processed_c_code_cli_str = re.sub(r'__extension__', '', processed_c_code_cli_str)
+    processed_c_code_cli_str = re.sub(r'__volatile(?:__)?', '', processed_c_code_cli_str)
+    processed_c_code_cli_str = re.sub(r'__inline(?:__)?', '', processed_c_code_cli_str)
+    processed_c_code_cli_str = re.sub(r'__asm__\s*\(\s*".*?"\s*\)', '', processed_c_code_cli_str)
+    processed_c_code_cli_str = re.sub(r'__asm\s*\(\s*".*?"\s*\)', '', processed_c_code_cli_str)
+    processed_c_code_cli_str = re.sub(r'__declspec\s*\([^)]*\)', '', processed_c_code_cli_str)
 
-            parser_cli = c_parser.CParser()
-            ast_cli = parser_cli.parse(processed_c_code_cli_str, filename=input_file_arg)
+    parser_cli = c_parser.CParser()
+    ast_cli = parser_cli.parse(processed_c_code_cli_str, filename=input_file_arg)
 
-            ast_cli = apply_dead_code_insertion(ast_cli)
-            ast_cli = apply_dummy_function_insertion(ast_cli, num_to_insert=1)
-            ast_cli = apply_opaque_predicates(ast_cli)
-            ast_cli = apply_renaming(ast_cli, debug_mode=False)
-            ast_cli = apply_equivalent_expression(ast_cli)
+    ast_cli = apply_dead_code_insertion(ast_cli)
+    ast_cli = apply_dummy_function_insertion(ast_cli, num_to_insert=1)
+    ast_cli = apply_opaque_predicates(ast_cli)
+    ast_cli = apply_renaming(ast_cli) # Removed debug_mode=False
+    ast_cli = apply_equivalent_expression(ast_cli)
 
 
-    if __name == "main":
-        if len(sys.argv) > 1:
-            run_cli_mode()
-        else:
+if __name__ == "__main__":
+    if len(sys.argv) > 1:
+        run_cli_mode()
+    else:
         gui_root = tk.Tk()
         app_instance = ObfuscatorGUI(gui_root)
         gui_root.mainloop()
-
