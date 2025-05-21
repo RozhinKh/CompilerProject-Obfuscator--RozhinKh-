@@ -252,3 +252,54 @@ class ObfuscatorGUI:
         self.current_input_filename = "input.mc"
         print("Cleared. Ready.")
 
+        def run_cli_mode():
+            if not (2 <= len(sys.argv) <= 3):
+                print("Usage: python main_ast.py <input_file.c> [output_file.c]")
+                sys.exit(1)
+
+            input_file_arg = sys.argv[1]
+
+            if not os.path.exists(input_file_arg):
+                print(f"Error: Input file '{input_file_arg}' not found.", file=sys.stderr)
+                sys.exit(1)
+
+            if len(sys.argv) == 3:
+                output_file_arg = sys.argv[2]
+            else:
+                name_part, ext_part = os.path.splitext(os.path.basename(input_file_arg))
+                if not ext_part: ext_part = ".mc"
+                output_file_arg = f"{name_part}_obf{ext_part}"
+
+            with open(input_file_arg, 'r', encoding='utf-8') as f:
+                code_to_obfuscate = f.read()
+            processed_c_code_cli_str = code_to_obfuscate
+
+            processed_c_code_cli_str = re.sub(r'__attribute__\s*\(\([^)]*\)\)', '', processed_c_code_cli_str)
+            processed_c_code_cli_str = re.sub(r'__restrict(?:)?', '', processed_c_code_cli_str)
+            processed_c_code_cli_str = re.sub(r'extension', '', processed_c_code_cli_str)
+            processed_c_code_cli_str = re.sub(r'volatile(?:)?', '', processed_c_code_cli_str)
+            processed_c_code_cli_str = re.sub(r'inline(?:)?', '', processed_c_code_cli_str)
+
+
+            processed_c_code_cli_str = re.sub(r'asm__\s*\(\s*".*?"\s*\)', '', processed_c_code_cli_str)
+            processed_c_code_cli_str = re.sub(r'__asm\s*\(\s*".*?"\s*\)', '', processed_c_code_cli_str)
+            processed_c_code_cli_str = re.sub(r'__declspec\s*\([^)]*\)', '', processed_c_code_cli_str)
+
+            parser_cli = c_parser.CParser()
+            ast_cli = parser_cli.parse(processed_c_code_cli_str, filename=input_file_arg)
+
+            ast_cli = apply_dead_code_insertion(ast_cli)
+            ast_cli = apply_dummy_function_insertion(ast_cli, num_to_insert=1)
+            ast_cli = apply_opaque_predicates(ast_cli)
+            ast_cli = apply_renaming(ast_cli, debug_mode=False)
+            ast_cli = apply_equivalent_expression(ast_cli)
+
+
+    if __name == "main":
+        if len(sys.argv) > 1:
+            run_cli_mode()
+        else:
+        gui_root = tk.Tk()
+        app_instance = ObfuscatorGUI(gui_root)
+        gui_root.mainloop()
+
