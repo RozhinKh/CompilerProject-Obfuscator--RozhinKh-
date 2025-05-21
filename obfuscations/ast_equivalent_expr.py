@@ -1,8 +1,6 @@
 from pycparser import c_ast
 
 class EquivalentExpression(c_ast.NodeVisitor):
-    def __init__(self):
-        pass
 
     def visit_BinaryOp(self, node):
         self.generic_visit(node)
@@ -22,7 +20,7 @@ class EquivalentExpression(c_ast.NodeVisitor):
                 node.right = negated_right_operand
                 return
 
-def apply_equivalent_expression(ast_root_node):
+def apply_equivalent_expression(root_node):
     replacer_visitor = EquivalentExpression()
-    replacer_visitor.visit(ast_root_node)
-    return ast_root_node
+    replacer_visitor.visit(root_node)
+    return root_node

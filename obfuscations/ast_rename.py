@@ -117,10 +117,10 @@ class IdentifierRenamer(c_ast.NodeVisitor):
             self.visit(node.type)
 
 
-def apply_renaming(ast_root_node):
+def apply_renaming(root_node):
     reset_renaming_state()
     renamer_visitor = IdentifierRenamer()
-    renamer_visitor.visit(ast_root_node)
-    return ast_root_node
+    renamer_visitor.visit(root_node)
+    return root_node
 
 

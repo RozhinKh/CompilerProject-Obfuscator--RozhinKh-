@@ -25,20 +25,14 @@ class ObfuscatorGUI:
 
         style = ttk.Style()
         available_themes = style.theme_names()
-        if 'vista' in available_themes:
-            style.theme_use('vista')
-        elif 'clam' in available_themes:
-            style.theme_use('clam')
-        elif 'alt' in available_themes:
+        if 'alt' in available_themes:
             style.theme_use('alt')
-        else:
-            style.theme_use('default')
 
-        style.configure("TButton", padding=6, relief="flat", font=('Segoe UI', 9))
-        style.configure("TLabel", font=('Segoe UI', 9))
-        style.configure("TEntry", padding=5, font=('Segoe UI', 9))
-        style.configure("TCheckbutton", font=('Segoe UI', 9))
-        style.configure("TLabelframe.Label", font=('Segoe UI', 9, 'bold'))
+        style.configure("TButton", padding=6, relief="flat", font=('default', 9))
+        style.configure("TLabel", font=('default', 9))
+        style.configure("TEntry", padding=5, font=('default', 9))
+        style.configure("TCheckbutton", font=('default', 9))
+        style.configure("TLabelframe.Label", font=('default', 9, 'bold'))
 
         main_app_frame = ttk.Frame(self.root, padding="10 10 10 10")
         main_app_frame.pack(fill=tk.BOTH, expand=True)
@@ -118,7 +112,7 @@ class ObfuscatorGUI:
 
     def action_load_file(self):
         filepath = filedialog.askopenfilename(
-            title="Select Mini-C File",
+            title="Select File",
             filetypes=[("C/Mini-C Files", "*.c *.mc"), ("All Files", "*.*")]
         )
         if not filepath: return
@@ -141,12 +135,10 @@ class ObfuscatorGUI:
             self.output_entry.insert(0, suggested_output_path.replace("\\", "/"))
         except Exception as e:
             print(f"Error loading file: {e}")
-            self.input_text_area.delete("1.0", tk.END)
-            self.input_text_area.insert(tk.END, f"Error loading file: {e}")
 
     def action_select_output_file(self):
         initial_dir = "."
-        initial_file = "output.mc"  # Default output extension
+        initial_file = "output.mc"
         current_input_path = self.input_entry.get()
 
         if self.current_input_filepath:
@@ -154,14 +146,14 @@ class ObfuscatorGUI:
             name_part, ext_part = os.path.splitext(os.path.basename(self.current_input_filepath))
             if not ext_part: ext_part = ".mc"
             initial_file = f"{name_part}_obf{ext_part}"
-        elif current_input_path:  # Use path from entry if available
+        elif current_input_path:
             try:
                 initial_dir = os.path.dirname(current_input_path)
                 base = os.path.basename(current_input_path)
                 name_part, ext_part = os.path.splitext(base)
                 if not ext_part: ext_part = ".mc"
                 initial_file = f"{name_part}_obf{ext_part}"
-            except:  # Fallback if path is malformed
+            except:
                 pass
 
         filepath = filedialog.asksaveasfilename(
@@ -236,22 +228,6 @@ class ObfuscatorGUI:
         input_code_from_textarea = self.input_text_area.get("1.0", tk.END).strip()
         output_filepath_str = self.output_entry.get().strip()
 
-        if not input_code_from_textarea:
-            print("Error: Input code is empty.")
-            self.output_text_area.config(state="normal")
-            self.output_text_area.delete("1.0", tk.END)
-            self.output_text_area.insert(tk.END, "Error: Input code is empty.")
-            self.output_text_area.config(state="disabled")
-            return
-
-        if not output_filepath_str:
-            print("Error: Output file path is not set.")
-            self.output_text_area.config(state="normal")
-            self.output_text_area.delete("1.0", tk.END)
-            self.output_text_area.insert(tk.END, "Error: Output file path is not set.")
-            self.output_text_area.config(state="disabled")
-            return
-
         self.root.config(cursor="watch")
         self.root.update_idletasks()
 
@@ -259,9 +235,8 @@ class ObfuscatorGUI:
             processed_c_code_str = self.preprocess_code(input_code_from_textarea)
 
             parser = c_parser.CParser()
-            # Use a fallback filename if current_input_filename is None or empty
             ast_filename = self.current_input_filename if self.current_input_filename else "input.c"
-            if not ast_filename.endswith((".c", ".mc")):  # Ensure pycparser gets a .c like name
+            if not ast_filename.endswith((".c", ".mc")):
                 ast_filename += ".c"
 
             ast = parser.parse(processed_c_code_str, filename=ast_filename)
@@ -312,8 +287,8 @@ class ObfuscatorGUI:
         self.input_entry.delete(0, tk.END)
         self.output_entry.delete(0, tk.END)
         self.current_input_filepath = None
-        self.current_input_filename = "input.mc"  # Reset to default
-        print("Cleared. Ready.")
+        self.current_input_filename = "input.mc"
+        print("Cleared.")
 
 
 def _preprocess_code_cli(code_string):
