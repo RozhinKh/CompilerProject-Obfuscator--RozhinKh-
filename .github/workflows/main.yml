@@ -32,7 +32,7 @@ jobs:
       - name: Run C Obfuscator Script
         run: |
           echo "Attempting to run Python script: main.py"
-          python -u main_ast.py test_data/test_input.c test_data/test_output_obf.c
+          python -u main.py test_data/test_input.c test_data/test_output_obf.c
           echo "Python script execution command finished."
           echo "Listing test_data directory contents after script execution:"
           ls -la test_data/
