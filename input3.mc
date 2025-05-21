@@ -17,6 +17,8 @@ void manipulate_string(char *str) {
     }
 }
 
+
+
 int main() {
     char my_string[] = "HelloWorld123";
     char *ptr_to_str = my_string;
