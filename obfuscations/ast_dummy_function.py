@@ -3,33 +3,29 @@ from pycparser import c_ast
 import random
 import string
 
-DUMMY_FUNCTION = "dummyFunction_"
-DUMMY_VARIABLE = "dummyVariable_"
-dummy_function_counters = {'func': 0, 'var': 0}
+FUNCTION_PREFIX = "dummyFunction_"
+VARIABLE_PREFIX = "dummyVariable_"
+dummy_counters = {'func': 0, 'var': 0}
 
 
-def generate_dummy_function_name():
-    dummy_function_counters['func'] += 1
-    return f"{DUMMY_FUNCTION}{dummy_function_counters['func']}"
+def dummy_function():
+    dummy_counters['func'] += 1
+    return f"{FUNCTION_PREFIX}{dummy_counters['func']}"
 
 
-def generate_dummy_var_name():
-    dummy_function_counters['var'] += 1
-    return f"{DUMMY_VARIABLE}{dummy_function_counters['var']}"
+def dummy_variable():
+    dummy_counters['var'] += 1
+    return f"{VARIABLE_PREFIX}{dummy_counters['var']}"
 
 
-def reset_dummy_function_state():
-    dummy_function_counters['func'] = 0
-    dummy_function_counters['var'] = 0
+def reset_dummy_state():
+    dummy_counters['func'] = 0
+    dummy_counters['var'] = 0
 
 
 class DummyFunctionInjector:
-    def __init__(self):
-        pass
-
-    def create_dummy_function_ast(self):
-        dummy_function_name = generate_dummy_function_name()
-
+    def create_dummy(self):
+        dummy_function_name = dummy_function()
         params = None
         return_type_declaration = c_ast.TypeDecl(
             declname=dummy_function_name,
@@ -39,12 +35,11 @@ class DummyFunctionInjector:
         )
         func_declaration_type = c_ast.FuncDecl(args=params, type=return_type_declaration)
 
-        var_a_name = generate_dummy_var_name()
-        var_b_name = generate_dummy_var_name()
+        var_a_name = dummy_variable()
+        var_b_name = dummy_variable()
 
-        declaration_a = c_ast.Decl(
-            name=var_a_name, quals=[], storage=[], funcspec=[],
-            type=c_ast.TypeDecl(
+        declaration_a = c_ast.Decl( name=var_a_name, quals=[], storage=[], funcspec=[],
+             type=c_ast.TypeDecl(
                 declname=var_a_name, quals=[],
                 type=c_ast.IdentifierType(['int']),
                 align=None
@@ -53,9 +48,8 @@ class DummyFunctionInjector:
             bitsize=None,
             align=None
         )
-        declaration_b = c_ast.Decl(
-            name=var_b_name, quals=[], storage=[], funcspec=[],
-            type=c_ast.TypeDecl(
+        declaration_b = c_ast.Decl( name=var_b_name, quals=[], storage=[], funcspec=[],
+             type=c_ast.TypeDecl(
                 declname=var_b_name, quals=[],
                 type=c_ast.IdentifierType(['char']),
                 align=None
@@ -71,8 +65,7 @@ class DummyFunctionInjector:
                                     c_ast.Constant('char', f"'{random.choice(string.ascii_lowercase)}'"))
         condition = c_ast.BinaryOp('&&', condition_left, condition_right)
 
-        assign_right = c_ast.BinaryOp('-',
-                                    c_ast.BinaryOp('*', c_ast.ID(name=var_a_name), c_ast.Constant('int', '2')),
+        assign_right = c_ast.BinaryOp('-', c_ast.BinaryOp('*', c_ast.ID(name=var_a_name), c_ast.Constant('int', '2')),
                                     c_ast.Constant('int', '1'))
         if_assign = c_ast.Assignment('=', c_ast.ID(name=var_a_name), assign_right)
         if_compound = c_ast.Compound(block_items=[if_assign])
@@ -97,7 +90,7 @@ class DummyFunctionInjector:
         function_items = [declaration_a, declaration_b, if_statement, return_statement]
         function_body = c_ast.Compound(block_items=function_items)
 
-        function_declaration_node = c_ast.Decl(
+        declaration_node = c_ast.Decl(
             name=dummy_function_name,
             quals=[], storage=['extern'], funcspec=[],
             type=func_declaration_type,
@@ -106,26 +99,28 @@ class DummyFunctionInjector:
             align=None
         )
 
-        dummy_function_definition = c_ast.FuncDef(
-            decl=function_declaration_node,
+        dummy_definition = c_ast.FuncDef(
+            decl=declaration_node,
             param_decls=None,
             body=function_body
         )
-        return dummy_function_definition
+        return dummy_definition
 
-    def dummy_function_injection(self, ast_root_node, num_dummy_functions=1):
+    def dummy_injection(self, ast_root_node, num_dummy_functions=1):
         for _ in range(num_dummy_functions):
-            dummy_func_ast = self.create_dummy_function_ast()
+            dummy_func_ast = self.create_dummy()
             if ast_root_node.ext is None:
                 ast_root_node.ext = []
             ast_root_node.ext.append(dummy_func_ast)
 
 
-def apply_dummy_function_insertion(ast_root_node, num_to_insert=1):
+def apply_dummy_function_insertion(root_node, num_to_insert=1):
     if num_to_insert <= 0:
-        return ast_root_node
+        return root_node
 
-    reset_dummy_function_state()
+
+
+    reset_dummy_state()
     injector = DummyFunctionInjector()
-    injector.dummy_function_injection(ast_root_node, num_dummy_functions=num_to_insert)
-    return ast_root_node
+    injector.dummy_injection(root_node, num_dummy_functions=num_to_insert)
+    return root_node
