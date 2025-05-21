@@ -1,4 +1,3 @@
-# CompilerProject-Obfuscator--RozhinKh-
 # Mini-C Obfuscator
 
 ## Project Overview
