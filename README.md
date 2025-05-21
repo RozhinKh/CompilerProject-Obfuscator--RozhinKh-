@@ -57,10 +57,10 @@ pip install pycparser
 To run the obfuscator with the graphical user interface:
 
 1.  Navigate to the project's root directory in your terminal.
-2.  Execute the `main_ast.py` script:
+2.  Execute the `main.py` script:
 
     ```bash
-    python main_ast.py
+    python main.py
     ```
 
 3.  **Using the GUI:**
@@ -75,7 +75,7 @@ To run the obfuscator with the graphical user interface:
 To run the obfuscator via the command-line interface:
 
 1.  Navigate to the project's root directory in your terminal.
-2.  Execute the `main_ast.py` script with the input file as an argument. All obfuscation techniques will be applied by default.
+2.  Execute the `main.py` script with the input file as an argument. All obfuscation techniques will be applied by default.
 
     ```bash
     python main_ast.py <input_file.mc> [output_file.mc]
@@ -88,17 +88,17 @@ To run the obfuscator via the command-line interface:
 
     ```bash
     # Obfuscate 'example.mc' and save as 'example_obf.mc'
-    python main_ast.py example.mc
+    python main.py example.mc
 
     # Obfuscate 'source.c' and save as 'obfuscated_source.c'
-    python main_ast.py source.c obfuscated_source.c
+    python main.py source.c obfuscated_source.c
     ```
 
 ## Project Structure
 
 ```
 .
-├── main_ast.py                 # Main script (GUI & CLI logic, orchestrates obfuscations)
+├── main.py                 # Main script (GUI & CLI logic, orchestrates obfuscations)
 ├── obfuscations/
 │   ├── __init__.py             # Makes 'obfuscations' a Python package
 │   ├── ast_rename.py           # Implements identifier renaming
