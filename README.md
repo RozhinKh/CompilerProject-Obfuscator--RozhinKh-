@@ -78,7 +78,7 @@ To run the obfuscator via the command-line interface:
 2.  Execute the `main.py` script with the input file as an argument. All obfuscation techniques will be applied by default.
 
     ```bash
-    python main_ast.py <input_file.mc> [output_file.mc]
+    python main.py <input_file.mc> [output_file.mc]
     ```
 
     * `<input_file.mc>`: The path to your Mini-C source file (e.g., `my_program.mc`).
@@ -100,7 +100,6 @@ To run the obfuscator via the command-line interface:
 .
 ├── main.py                 # Main script (GUI & CLI logic, orchestrates obfuscations)
 ├── obfuscations/
-│   ├── __init__.py             # Makes 'obfuscations' a Python package
 │   ├── ast_rename.py           # Implements identifier renaming
 │   ├── ast_dead_code.py        # Implements dead code insertion
 │   ├── ast_equivalent_expr.py  # Implements equivalent expression transformation
