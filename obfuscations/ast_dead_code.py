@@ -15,6 +15,8 @@ def reset_dead_code_state():
 
 
 class DeadCodeInserter(c_ast.NodeVisitor):
+    def __init__(self):
+        pass
 
     def create_dead_variable(self):
         temp_dead_var_name = generate_deadcode_variable_name()
