@@ -123,3 +123,29 @@ class ObfuscatorGUI:
         self.output_entry.delete(0, tk.END)
         self.output_entry.insert(0, suggested_output_path.replace("\\", "/")) # Ensure forward slashes
 
+    def action_select_output_file(self):
+        initial_dir = "."
+        initial_file = "output.mc"
+        if self.current_input_filepath:
+            initial_dir = os.path.dirname(self.current_input_filepath)
+            name_part, ext_part = os.path.splitext(self.current_input_filename)
+            if not ext_part: ext_part = ".mc"
+            initial_file = f"{name_part}_obf{ext_part}" # Changed suffix
+        elif self.input_entry.get():
+            initial_dir = os.path.dirname(self.input_entry.get())
+            base = os.path.basename(self.input_entry.get())
+            name_part, ext_part = os.path.splitext(base)
+            if not ext_part: ext_part = ".mc"
+            initial_file = f"{name_part}_obf{ext_part}" # Changed suffix
+
+
+            filepath = filedialog.asksaveasfilename(
+            initialdir=initial_dir,
+            initialfile=initial_file,
+            defaultextension=".mc",
+            filetypes=[("Mini-C Files", "*.mc"), ("C Files", "*.c"), ("All Files", "*.*")],
+        )
+        if filepath:
+            self.output_entry.delete(0, tk.END)
+            self.output_entry.insert(0, filepath.replace("\\", "/")) # Ensure forward slashes
+
