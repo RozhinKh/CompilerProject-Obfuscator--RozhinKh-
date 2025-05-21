@@ -72,6 +72,7 @@ class ObfuscatorGUI:
         input_text_frame.rowconfigure(0, weight=1)
         input_text_frame.columnconfigure(0, weight=1)
 
+
         self.input_text_area = tk.Text(input_text_frame, undo=True, wrap=tk.WORD, font=('Consolas', 10), height=15)
         self.input_text_scrollbar = ttk.Scrollbar(input_text_frame, orient="vertical",
                                                   command=self.input_text_area.yview)
@@ -139,7 +140,7 @@ class ObfuscatorGUI:
             initial_file = f"{name_part}_obf{ext_part}" # Changed suffix
 
 
-            filepath = filedialog.asksaveasfilename(
+        filepath = filedialog.asksaveasfilename(
             initialdir=initial_dir,
             initialfile=initial_file,
             defaultextension=".mc",
@@ -149,3 +150,28 @@ class ObfuscatorGUI:
             self.output_entry.delete(0, tk.END)
             self.output_entry.insert(0, filepath.replace("\\", "/")) # Ensure forward slashes
 
+    def handle_drop_file(self, event):
+        filepath_str = event.data
+        if filepath_str.startswith('{') and filepath_str.endswith('}'):
+            filepath_str = filepath_str[1:-1]
+
+        filepaths = filepath_str.split()
+        filepath = filepaths[0]
+
+        if os.path.isfile(filepath):
+            self.current_input_filepath = filepath
+            self.current_input_filename = os.path.basename(filepath)
+            self.input_entry.delete(0, tk.END)
+            self.input_entry.insert(0, filepath)
+            with open(filepath, 'r', encoding='utf-8') as file:
+                input_code = file.read()
+            self.input_text_area.delete("1.0", tk.END)
+            self.input_text_area.insert(tk.END, input_code)
+            name_part, ext_part = os.path.splitext(self.current_input_filename)
+            if not ext_part: ext_part = ".mc"
+            suggested_output_filename = f"{name_part}_obf{ext_part}" # Changed suffix
+            suggested_output_path = os.path.join(os.path.dirname(filepath), suggested_output_filename)
+            self.output_entry.delete(0, tk.END)
+            self.output_entry.insert(0, suggested_output_path.replace("\\", "/")) # Ensure forward slashes
+        else:
+            print(f"Error: Invalid file dropped: {filepath}")
