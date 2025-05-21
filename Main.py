@@ -208,3 +208,47 @@ class ObfuscatorGUI:
         processed_c_code_str = re.sub(r'extension', '', processed_c_code_str)
         processed_c_code_str = re.sub(r'volatile(?:)?', '', processed_c_code_str)
         processed_c_code_str = re.sub(r'inline(?:)?', '', processed_c_code_str)
+        processed_c_code_str = re.sub(r'asm__\s*\(\s*".*?"\s*\)', '', processed_c_code_str)
+        processed_c_code_str = re.sub(r'__asm\s*\(\s*".*?"\s*\)', '', processed_c_code_str)
+        processed_c_code_str = re.sub(r'__declspec\s*\([^)]*\)', '', processed_c_code_str)
+
+        parser = c_parser.CParser()
+        ast_filename = self.current_input_filename if self.current_input_filename else "input.c"
+        ast = parser.parse(processed_c_code_str, filename=ast_filename)
+
+        if self.obf_options.get("dead_code", tk.BooleanVar(value=False)).get():
+            ast = apply_dead_code_insertion(ast)
+        if self.obf_options.get("dummy_function", tk.BooleanVar(value=False)).get():
+            ast = apply_dummy_function_insertion(ast, num_to_insert=random.randint(1, 2))
+        if self.obf_options.get("opaque_predicate", tk.BooleanVar(value=False)).get():
+            ast = apply_opaque_predicates(ast)
+        if self.obf_options.get("rename", tk.BooleanVar(value=False)).get():
+            ast = apply_renaming(ast, debug_mode=True)
+        if self.obf_options.get("equivalent_expression", tk.BooleanVar(value=False)).get():
+            ast = apply_equivalent_expression(ast)
+
+        generator = c_generator.CGenerator()
+        obfuscated_c_code = generator.visit(ast)
+
+        with open(output_filepath_str.replace("\\", "/"), 'w', encoding='utf-8') as f:
+            f.write(obfuscated_c_code)
+
+        print(f"Obfuscation successful! Saved to: {output_filepath_str.replace("\\", "/")}")
+
+        self.output_text_area.config(state="normal")
+        self.output_text_area.delete("1.0", tk.END)
+        self.output_text_area.insert(tk.END, obfuscated_c_code)
+        self.output_text_area.config(state="disabled")
+        self.root.config(cursor="")
+
+    def action_clear_text_areas(self):
+        self.input_text_area.delete("1.0", tk.END)
+        self.output_text_area.config(state="normal")
+        self.output_text_area.delete("1.0", tk.END)
+        self.output_text_area.config(state="disabled")
+        self.input_entry.delete(0, tk.END)
+        self.output_entry.delete(0, tk.END)
+        self.current_input_filepath = None
+        self.current_input_filename = "input.mc"
+        print("Cleared. Ready.")
+
